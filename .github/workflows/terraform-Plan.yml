@@ -25,11 +25,10 @@ jobs:
         run: |
           terraform plan \
           -var="gcp_project_id=${{ secrets.GCP_PROJECT_ID }}" \
-          -var="gcp_credentials_file=gcp-key.json" \
+          -var="gcp_credentials=${{ secrets.GCP_CREDENTIALS }}" \
           -out=tfplan
       - name: Upload Plan artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: tfplan
-          
