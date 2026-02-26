@@ -1,9 +1,9 @@
 ---
-name: Multi-Cloud Apply
+name: terraform-apply
 on:
   workflow_run:
     workflows:
-      - Multi-Cloud Deploy
+      - terraform-plan
     types:
       - completed
 jobs:

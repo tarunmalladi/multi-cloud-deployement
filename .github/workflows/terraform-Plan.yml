@@ -1,5 +1,5 @@
 ---
-name: Multi-Cloud Deploy
+name: terraform-plan
 on:
   push:
     branches:
