@@ -9,6 +9,7 @@ on:
 jobs:
   terraform:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -21,10 +22,32 @@ jobs:
         uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         run: terraform init
-      - name: Download Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
+      - name: Install helper tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+
+      - name: Download tfplan from triggering workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -e
+          run_id=${{ github.event.workflow_run.id }}
+          echo "Triggering workflow run id: $run_id"
+          api_url="https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts"
+          artifacts_json=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$api_url")
+          artifact_id=$(echo "$artifacts_json" | jq -r '.artifacts[] | select(.name=="tfplan") | .id')
+          if [ -z "$artifact_id" ] || [ "$artifact_id" = "null" ]; then
+            echo "Artifact 'tfplan' not found in triggering run. Available artifacts:" >&2
+            echo "$artifacts_json" >&2
+            exit 1
+          fi
+          echo "Found artifact id: $artifact_id"
+          download_url="https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${artifact_id}/zip"
+          curl -L -H "Authorization: Bearer $GITHUB_TOKEN" -o artifact.zip "$download_url"
+          unzip artifact.zip -d artifact
+          # move extracted files (tfplan) to workspace root
+          mv artifact/* ./ || true
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
