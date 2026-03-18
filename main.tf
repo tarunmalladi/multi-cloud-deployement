@@ -19,31 +19,3 @@ resource "aws_instance" "aws_nginx" {
   }
 }
 
-################################
-# GCP Compute Engine Instance
-################################
-resource "google_compute_instance" "gcp_nginx" {
-  name         = "tarun-gcp-nginx"
-  machine_type = "e2-micro"
-  zone         = var.gcp_zone
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-    }
-  }
-
-  network_interface {
-    network = "default"
-    access_config {}
-  }
-
-  metadata_startup_script = <<-EOF
-              #!/bin/bash
-              apt update -y
-              apt install nginx -y
-              systemctl start nginx
-              systemctl enable nginx
-              echo "hello tarun-gcp" > /var/www/html/index.nginx-debian.html
-              EOF
-}

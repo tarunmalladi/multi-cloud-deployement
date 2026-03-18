@@ -10,21 +10,6 @@ variable "aws_region" {
 # GCP Variables
 #########################
 
-variable "gcp_project_id" {
-  description = "GCP Project ID"
-}
-
-variable "gcp_region" {
-  default = "asia-south1"
-}
-
-variable "gcp_zone" {
-  default = "asia-south1-a"
-}
-
-variable "gcp_credentials_file" {
-  description = "Path to GCP service account JSON"
-}
 
 #########################
 # Backend variables (used for documentation / CLI - not referenced in backend block)
